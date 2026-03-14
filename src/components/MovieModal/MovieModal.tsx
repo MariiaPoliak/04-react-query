@@ -1,63 +1,55 @@
 import { useEffect } from "react";
 import { createPortal } from "react-dom";
 import type { Movie } from "../../types/movie";
-import css from "./MovieModal.module.css";
+import s from "./MovieModal.module.css";
 
 interface MovieModalProps {
   movie: Movie;
   onClose: () => void;
 }
 
-const modalRoot = document.querySelector("#modal-root") as HTMLElement;
-
 const MovieModal = ({ movie, onClose }: MovieModalProps) => {
+  const modalRoot = document.getElementById("modal-root");
+
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent): void => {
-      if (e.code === "Escape") onClose();
-    };
-
+    const handleEsc = (e: KeyboardEvent) => e.code === "Escape" && onClose();
+    window.addEventListener("keydown", handleEsc);
     document.body.style.overflow = "hidden";
-    window.addEventListener("keydown", handleKeyDown);
-
     return () => {
+      window.removeEventListener("keydown", handleEsc);
       document.body.style.overflow = "auto";
-      window.removeEventListener("keydown", handleKeyDown);
     };
   }, [onClose]);
 
-  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>): void => {
-    if (e.currentTarget === e.target) onClose();
-  };
+  if (!modalRoot) return null;
+
+  const imageUrl = movie.backdrop_path
+    ? `https://image.tmdb.org/t/p/w780${movie.backdrop_path}`
+    : "https://via.placeholder.com/780x440?text=No+Image+Available";
 
   return createPortal(
     <div
-      className={css.backdrop}
-      onClick={handleBackdropClick}
-      role="dialog"
-      aria-modal="true"
+      className={s.backdrop}
+      onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className={css.modal}>
-        <button
-          className={css.closeButton}
-          onClick={onClose}
-          aria-label="Close modal"
-        >
+      <div className={s.content}>
+        <button className={s.closeBtn} onClick={onClose} aria-label="close">
           &times;
         </button>
-        <img
-          src={`https://image.tmdb.org/t/p/original${movie.backdrop_path || movie.poster_path}`}
-          alt={movie.title}
-          className={css.image}
-        />
-        <div className={css.content}>
-          <h2>{movie.title}</h2>
-          <p>{movie.overview}</p>
-          <p>
-            <strong>Release Date:</strong> {movie.release_date}
-          </p>
-          <p>
-            <strong>Rating:</strong> {movie.vote_average.toFixed(1)}/10
-          </p>
+
+        <div className={s.modalLayout}>
+          <img src={imageUrl} alt={movie.title} className={s.backdropImg} />
+
+          <div className={s.info}>
+            <h2 className={s.title}>{movie.title}</h2>
+            <div className={s.meta}>
+              <span className={s.rating}>
+                ⭐ {movie.vote_average.toFixed(1)}
+              </span>
+              <span className={s.date}>{movie.release_date}</span>
+            </div>
+            <p className={s.overview}>{movie.overview}</p>
+          </div>
         </div>
       </div>
     </div>,

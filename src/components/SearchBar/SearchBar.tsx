@@ -1,4 +1,4 @@
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import styles from "./SearchBar.module.css";
 
 interface SearchBarProps {
@@ -6,21 +6,19 @@ interface SearchBarProps {
 }
 
 const SearchBar = ({ onSubmit }: SearchBarProps) => {
-  const handleFormAction = (formData: FormData): void => {
+  const handleAction = (formData: FormData) => {
     const query = formData.get("query") as string;
-    const normalizedQuery = query.trim();
 
-    if (normalizedQuery === "") {
+    if (query.trim() === "") {
       toast.error("Please enter your search query.");
       return;
     }
 
-    onSubmit(normalizedQuery);
+    onSubmit(query);
   };
 
   return (
     <header className={styles.header}>
-      <Toaster position="top-right" />
       <div className={styles.container}>
         <a
           className={styles.link}
@@ -30,7 +28,7 @@ const SearchBar = ({ onSubmit }: SearchBarProps) => {
         >
           Powered by TMDB
         </a>
-        <form action={handleFormAction} className={styles.form}>
+        <form action={handleAction} className={styles.form}>
           <input
             className={styles.input}
             type="text"
